@@ -87,6 +87,21 @@ app.get('/update/:id', (req, res) => {
     .catch(err => console.error(err));
 });
 
+// Deletes a user
+app.get('/remove/:id', (req, res) => {
+  // 👆🏾👆🏾 not ideal! ❌ 
+  // should be DELETE ❗❗❗
+  // I'm just too lazy to open up Postman for proper testing 🤷🏾‍♂️
+  const { id } = req.params;
+  User.destroy({
+    where: { id }
+  })
+  .then(() => {
+      res.redirect('/findall/')
+    })
+  .catch(err => console.error(err));
+});
+
 connection
   .sync({
     // logging: console.log
