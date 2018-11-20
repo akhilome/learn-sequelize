@@ -61,6 +61,14 @@ app.get('/findbyinitial/:initial', (req, res) => {
   }).catch(err => console.error(err));
 });
 
+// Finds user by id
+app.get('/findbyid/:id', (req, res) => {
+  const { id } = req.params;
+  User.findById(id).then(user => {
+    res.json(user);
+  }).catch(err => console.error(err));
+});
+
 
 connection
   .sync({
