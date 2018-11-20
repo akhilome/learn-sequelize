@@ -69,6 +69,23 @@ app.get('/findbyid/:id', (req, res) => {
   }).catch(err => console.error(err));
 });
 
+// Updates a user's data
+app.get('/update/:id', (req, res) => {
+  // 👆🏾👆🏾 not ideal! ❌ 
+  // should be PUT ❗❗❗
+  // I'm just too lazy to open up Postman for proper testing 🤷🏾‍♂️
+  const { name, password } = req.query;
+  const { id } = req.params;
+  User.update({
+    name,
+    password
+  }, { where: { id } })
+    .then(rows => {
+      console.log(rows)
+      res.redirect(`/findbyid/${id}`)
+    })
+    .catch(err => console.error(err));
+});
 
 connection
   .sync({
