@@ -20,10 +20,46 @@ const User = connection.define('User', {
     primaryKey: true,
     defaultValue: Sequelize.UUIDV4
   },
-  name: Sequelize.STRING,
+  name: {
+    type: Sequelize.STRING,
+    // 👇🏾👇🏾 Do some validation before sending data to db
+    validate: {
+      len: {
+        args: [3],
+        msg: 'Error: Name must be longer than 3 chars'
+        // 👆🏾👆🏾 Custom error message to be sent if validation fails
+      }
+    }
+  },
   bio: Sequelize.TEXT
   // 👆🏾👆🏾 the data types for each column/attribute 
   // is specified as Sequelize.[data_type] above
+});
+
+// 👇🏾👇🏾 Trigger a validation error 😠
+app.get('/fail', (req, res) => {
+  User.create({
+    name: 'Ky',
+    bio: 'Learning Sequelize kinda well 🤔'
+  }).then(user => {
+    res.json(user);
+  }).catch(error => {
+    console.error(error);
+    res.status(404).json(error);
+  });
+});
+
+// 👇🏾👇🏾 Trigger a successful insertion 🎊🕺🏾
+app.get('/pass', (req, res) => {
+  User.create({
+    name: 'Kay',
+    bio: 'Learning Sequelize very well 😀'
+  }).then(user => {
+    res.json(user);
+  }).catch(error => {
+    console.error(error);
+    res.status(404).json(error);
+  });
 });
 
 connection
@@ -31,13 +67,13 @@ connection
     logging: console.log,
     force: true
   })
-  .then(() => {
-    // 👇🏾👇🏾 Inserting new data into db
-    User.create({
-      name: 'Kay',
-      bio: 'Learning Sequelize'
-    });
-  })
+  // .then(() => {
+  //   // 👇🏾👇🏾 Inserting new data into db
+  //   User.create({
+  //     name: 'Kay',
+  //     bio: 'Learning Sequelize'
+  //   });
+  // })
   .then(() => console.log('Connection to db successful'))
   .catch(err => console.error('Unable to establish connection: ', err));
 
