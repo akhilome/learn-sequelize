@@ -30,6 +30,16 @@ const User = connection.define('User', {
   }
 });
 
+const Post = connection.define('Post', {
+  id: {
+    primaryKey: true,
+    type: Sequelize.UUID,
+    defaultValue: Sequelize.UUIDV4
+  },
+  title: Sequelize.STRING,
+  content: Sequelize.TEXT
+});
+
 // Fetches all users from the db
 app.get('/findall', (req, res) => {
   User.findAll().then(users => {
@@ -37,75 +47,29 @@ app.get('/findall', (req, res) => {
   }).catch(err => console.error(err));
 });
 
-// Finds users by name
-app.get('/findbyname/:name', (req, res) => {
-  const { name } = req.params;
-  User.findAll({
-    where: { name }
-  }).then(users => {
-    res.json(users);
+// Fetches all posts from the db
+app.get('/allposts', (req, res) => {
+  Post.findAll({
+    include: [User]
+  }).then(posts => {
+    res.json(posts);
   }).catch(err => console.error(err));
 });
 
-// Finds users with provided initial
-app.get('/findbyinitial/:initial', (req, res) => {
-  const { initial } = req.params;
-  User.findAll({
-    where: { 
-      name: {
-        [Op.like]: `${initial}%` // 👈🏾👈🏾 using Operators & wildcards (see docs 👀)
-      }
-    }
-  }).then(users => {
-    res.json(users);
-  }).catch(err => console.error(err));
-});
-
-// Finds user by id
-app.get('/findbyid/:id', (req, res) => {
-  const { id } = req.params;
-  User.findById(id).then(user => {
-    res.json(user);
-  }).catch(err => console.error(err));
-});
-
-// Updates a user's data
-app.get('/update/:id', (req, res) => {
-  // 👆🏾👆🏾 not ideal! ❌ 
-  // should be PUT ❗❗❗
-  // I'm just too lazy to open up Postman for proper testing 🤷🏾‍♂️
-  const { name, password } = req.query;
-  const { id } = req.params;
-  User.update({
-    name,
-    password
-  }, { where: { id } })
-    .then(rows => {
-      console.log(rows)
-      res.redirect(`/findbyid/${id}`)
-    })
-    .catch(err => console.error(err));
-});
-
-// Deletes a user
-app.get('/remove/:id', (req, res) => {
-  // 👆🏾👆🏾 not ideal! ❌ 
-  // should be DELETE ❗❗❗
-  // I'm just too lazy to open up Postman for proper testing 🤷🏾‍♂️
-  const { id } = req.params;
-  User.destroy({
-    where: { id }
-  })
-  .then(() => {
-      res.redirect('/findall/')
-    })
-  .catch(err => console.error(err));
-});
-
+// Make an SQL Association
+Post.belongsTo(User, { foreignKey: 'UserId' }); // 👈🏾👈🏾 puts foreignKey UserId in the Posts table
+ 
 connection
   .sync({
     // logging: console.log
   })
+  // .then(() => {
+  //   Post.create({
+  //     UserId: 88, 
+  //     title: 'First post',
+  //     content: 'Post content 1'
+  //   })
+  // })
   // .then(() => {
   //   User.bulkCreate(_USERS)
   //     .then(users => console.log('success adding users'))
