@@ -39,6 +39,10 @@ const Comment = connection.define('Comment', {
   the_comment: Sequelize.STRING
 });
 
+const Project = connection.define('Project', {
+  title: Sequelize.STRING
+});
+
 // Fetches all users from the db
 app.get('/findall', (req, res) => {
   User.findAll().then(users => {
@@ -69,19 +73,61 @@ app.get('/singlepost', (req, res) => {
   }).catch(err => console.error(err));
 });
 
+app.put('/addworker', (req, res) => {
+  Project.findById(2)
+    .then((project) => {
+      project.addWorkers(5);
+    })
+    .then(() => {
+      res.json({ message: 'User added!' });
+    })
+    .catch(err => console.error(err));
+});
+
+app.get('/userprojects', (req, res) => {
+  User.findAll({
+    attributes: ['name'],
+    include: [{
+      model: Project, as: 'Tasks',
+      attributes: ['title']
+    }]
+  })
+  .then(output => {
+    res.json(output)
+  })
+  .catch(err => console.error(err));
+});
+
 //👇🏾👇🏾👇🏾 SQL Associations
 
 // 👇🏾 One-to-One
 Post.belongsTo(User, { foreignKey: 'UserId' }); // 👈🏾👈🏾 puts foreignKey UserId in the Posts table
 
-// 👇🏾 Ome-to-Many
+// 👇🏾 One-to-Many
 Post.hasMany(Comment, { as: 'All_Comments' }); // 👈🏾👈🏾 puts foreignKey PostId in Comment table
+
+// 👇🏾 Many-to-Many
+User.belongsToMany(Project, { as: 'Tasks', through: 'UserProjects' });
+Project.belongsToMany(User, { as: 'Workers', through: 'UserProjects' });
+// 👆🏾👆🏾 creates a UserProjects table with ids for ProjectId & UserId
 
 connection
   .sync({
     // logging: console.log
     // force: true
   })
+  // .then(() => {
+  //   Project.create({
+  //     title: 'project 1'
+  //   }).then((project) => {
+  //     project.setWorkers([4, 5]);
+  //   })
+  // })
+  // .then(() => {
+  //   Project.create({
+  //     title: 'project 2'
+  //   })
+  // })
   // seed database
   // .then(() => {
   //   User.bulkCreate(_USERS)
